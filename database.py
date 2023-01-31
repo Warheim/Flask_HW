@@ -2,9 +2,9 @@ from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, create_eng
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 import atexit
 
-DSN = 'postgres://warheim:120290@127.0.0.1:5431/crud'
+DSN = 'postgresql://warheim:120290@127.0.0.1:5431/crud'
 engine = create_engine(DSN)
-Base = declarative_base(bind=engine)
+Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
 
@@ -25,5 +25,5 @@ class AdvertisementModel(Base):
     users = relationship(UserModel, backref='app_adv')
 
 
-Base.metadata.create_all()
+Base.metadata.create_all(bind=engine)
 atexit.register(engine.dispose)
