@@ -50,6 +50,7 @@ class UserOps(MethodView):
 
     def post(self):
         user_data = request.json
+        user_data['password'] = md5((user_data.get('password')).encode('utf-8')).hexdigest()
         with Session() as session:
             new_user = UserModel(**user_data)
             session.add(new_user)
@@ -60,7 +61,7 @@ class UserOps(MethodView):
                     status_code=409,
                     message='user with this email already exists'
                 )
-            return jsonify({'status': f'new user id is {new_user.id}'})
+            return jsonify({'status': f'new user is {new_user.email}'})
 
     def delete(self, user_id: int):
         with Session() as session:
@@ -90,14 +91,14 @@ class AdvertisementOps(MethodView):
             adv_data['author'] = user.id
             new_adv = AdvertisementModel(**adv_data)
             session.add(new_adv)
-            try:
-                session.commit()
-            except IntegrityError:
-                raise HttpException
         return jsonify({'status': 'advertisement added'})
 
     def delete(self, adv_id: int):
-        pass
+        with Session() as session:
+            old_adv = get_adv(adv_id, session)
+            session.delete(old_adv)
+            session.commit()
+        return jsonify({'status': 'advertisement deleted'})
 
 
 app.add_url_rule('/users/<int:user_id>/', view_func=UserOps.as_view('users'), methods=['GET', 'DELETE'])
