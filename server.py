@@ -33,7 +33,7 @@ def get_adv(adv_id: int, session=Session) -> AdvertisementModel:
     if adv is None:
         raise HttpException(
             status_code=404,
-            message='user not found'
+            message='advertisement not found'
         )
     return adv
 
@@ -50,7 +50,6 @@ class UserOps(MethodView):
 
     def post(self):
         user_data = request.json
-        user_data['password'] = md5(user_data['password'].encode('utf-8').hexdigest())
         with Session() as session:
             new_user = UserModel(**user_data)
             session.add(new_user)
@@ -74,10 +73,28 @@ class UserOps(MethodView):
 class AdvertisementOps(MethodView):
 
     def get(self, adv_id: int):
-        pass
+        with Session() as session:
+            adv = get_adv(adv_id, session)
+            return jsonify({
+                'id': adv.id,
+                'title': adv.title,
+                'description': adv.description,
+                'author': adv.author,
+                'creation_date': adv.creation_date
+            })
 
     def post(self, user_id: int):
-        pass
+        adv_data = request.json
+        with Session() as session:
+            user = get_user(user_id, session)
+            adv_data['author'] = user.id
+            new_adv = AdvertisementModel(**adv_data)
+            session.add(new_adv)
+            try:
+                session.commit()
+            except IntegrityError:
+                raise HttpException
+        return jsonify({'status': 'advertisement added'})
 
     def delete(self, adv_id: int):
         pass
@@ -86,7 +103,7 @@ class AdvertisementOps(MethodView):
 app.add_url_rule('/users/<int:user_id>/', view_func=UserOps.as_view('users'), methods=['GET', 'DELETE'])
 app.add_url_rule('/users/', view_func=UserOps.as_view('user_create'), methods=['POST'])
 app.add_url_rule('/adv/<int:adv_id>/', view_func=AdvertisementOps.as_view('advertisements'), methods=['GET', 'DELETE'])
-app.add_url_rule('/adv/<int:user_id>', view_func=AdvertisementOps.as_view('advertisements_create'), methods=['POST'])
+app.add_url_rule('/adv/<int:user_id>/', view_func=AdvertisementOps.as_view('advertisements_create'), methods=['POST'])
 
 if __name__ == '__main__':
     app.run()
