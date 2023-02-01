@@ -63,6 +63,17 @@ class UserOps(MethodView):
                 )
             return jsonify({'status': f'new user is {new_user.email}'})
 
+    def patch(self, user_id: int):
+        user_data = request.json
+        user_data['password'] = md5((user_data.get('password')).encode('utf-8')).hexdigest()
+        with Session() as session:
+            change_user = get_user(user_id, session)
+            for field, value in user_data.items():
+                setattr(change_user, field, value)
+            session.add(change_user)
+            session.commit()
+        return jsonify({'status': 'user data changed'})
+
     def delete(self, user_id: int):
         with Session() as session:
             old_user = get_user(user_id, session)
@@ -93,6 +104,16 @@ class AdvertisementOps(MethodView):
             session.add(new_adv)
         return jsonify({'status': 'advertisement added'})
 
+    def patch(self, adv_id: int):
+        adv_data = request.json
+        with Session() as session:
+            adv = get_adv(adv_id, session)
+            for field, value in adv_data.items():
+                setattr(adv, field, value)
+            session.add(adv)
+            session.commit()
+        return jsonify({'status': 'advertisement changed'})
+
     def delete(self, adv_id: int):
         with Session() as session:
             old_adv = get_adv(adv_id, session)
@@ -101,10 +122,14 @@ class AdvertisementOps(MethodView):
         return jsonify({'status': 'advertisement deleted'})
 
 
-app.add_url_rule('/users/<int:user_id>/', view_func=UserOps.as_view('users'), methods=['GET', 'DELETE'])
-app.add_url_rule('/users/', view_func=UserOps.as_view('user_create'), methods=['POST'])
-app.add_url_rule('/adv/<int:adv_id>/', view_func=AdvertisementOps.as_view('advertisements'), methods=['GET', 'DELETE'])
-app.add_url_rule('/adv/<int:user_id>/', view_func=AdvertisementOps.as_view('advertisements_create'), methods=['POST'])
+app.add_url_rule('/users/<int:user_id>/', view_func=UserOps.as_view('users'),
+                 methods=['GET', 'DELETE', 'PATCH'])
+app.add_url_rule('/users/', view_func=UserOps.as_view('user_create'),
+                 methods=['POST'])
+app.add_url_rule('/adv/<int:adv_id>/', view_func=AdvertisementOps.as_view('advertisements'),
+                 methods=['GET', 'DELETE', 'PATCH'])
+app.add_url_rule('/adv/<int:user_id>/', view_func=AdvertisementOps.as_view('advertisements_create'),
+                 methods=['POST'])
 
 if __name__ == '__main__':
     app.run()
