@@ -8,10 +8,16 @@ PASSWORD_REGEX = re.compile("^(?=.*[a-z_])(?=.*\d)(?=.*[@$!%*#?&_])[A-Za-z\d@$!#
 
 def check_password(password: str):
     if len(password) > 20:
-        raise ValueError('max length password is 20')
+        raise ValueError('max length password is 20 symbols')
     if not re.search(PASSWORD_REGEX, password):
         raise ValueError('password is too easy')
     return password
+
+
+def check_title(title: str):
+    if len(title.strip()) < 2:
+        raise ValueError('min length title is 2 symbols')
+    return title.strip()
 
 
 class CreateUserValidator(BaseModel):
@@ -36,10 +42,18 @@ class CreateAdvValidator(BaseModel):
     title: str
     description: Optional[str]
 
+    @validator('title')
+    def informative_title(cls, value):
+        return check_title(value)
+
 
 class PatchAdvValidator(BaseModel):
     title: Optional[str]
     description: Optional[str]
+
+    @validator('title')
+    def informative_title(cls, value):
+        return check_title(value)
 
 
 VALID_MODEL = Type[CreateUserValidator] | Type[PatchUserValidator] | Type[CreateAdvValidator] | Type[PatchAdvValidator]
