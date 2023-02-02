@@ -4,6 +4,7 @@ from database import Session, UserModel, AdvertisementModel
 from errors import HttpException
 from hashlib import md5
 from sqlalchemy.exc import IntegrityError
+from validators import CreateUserValidator, PatchUserValidator, CreateAdvValidator, PatchAdvValidator, validate
 
 app = Flask('app')
 
@@ -49,7 +50,7 @@ class UserOps(MethodView):
             })
 
     def post(self):
-        user_data = request.json
+        user_data = validate(request.json, CreateUserValidator)
         user_data['password'] = md5((user_data.get('password')).encode('utf-8')).hexdigest()
         with Session() as session:
             new_user = UserModel(**user_data)
@@ -64,8 +65,9 @@ class UserOps(MethodView):
             return jsonify({'status': f'new user is {new_user.email}'})
 
     def patch(self, user_id: int):
-        user_data = request.json
-        user_data['password'] = md5((user_data.get('password')).encode('utf-8')).hexdigest()
+        user_data = validate(request.json, PatchUserValidator)
+        if user_data.get('password'):
+            user_data['password'] = md5((user_data.get('password')).encode('utf-8')).hexdigest()
         with Session() as session:
             change_user = get_user(user_id, session)
             for field, value in user_data.items():
@@ -96,16 +98,17 @@ class AdvertisementOps(MethodView):
             })
 
     def post(self, user_id: int):
-        adv_data = request.json
+        adv_data = validate(request.json, CreateAdvValidator)
         with Session() as session:
             user = get_user(user_id, session)
             adv_data['author'] = user.id
             new_adv = AdvertisementModel(**adv_data)
             session.add(new_adv)
+            session.commit()
         return jsonify({'status': 'advertisement added'})
 
     def patch(self, adv_id: int):
-        adv_data = request.json
+        adv_data = validate(request.json, PatchAdvValidator)
         with Session() as session:
             adv = get_adv(adv_id, session)
             for field, value in adv_data.items():

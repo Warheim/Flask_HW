@@ -21,7 +21,7 @@ class AdvertisementModel(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     creation_date = Column(DateTime, server_default=func.now())
-    author = Column(Integer, ForeignKey('app_user.id'), nullable=False)
+    author = Column(Integer, ForeignKey('app_user.id', ondelete='CASCADE'))
     users = relationship(UserModel, backref='app_adv')
 
 

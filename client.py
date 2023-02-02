@@ -1,22 +1,23 @@
 import requests
 
 # response = requests.post('http://127.0.0.1:5000/users/',
-#                          json={'email': 'new_test@my.com', 'password': '9635Vkghnqj%!'})
+#                          json={})
 
-# response = requests.get('http://127.0.0.1:5000/users/5/')
+# response = requests.get('http://127.0.0.1:5000/users/1/')
 
-# response = requests.patch('http://127.0.0.1:5000/users/4/',
-#                           json={'password': '110211gOdf'})
+# response = requests.patch('http://127.0.0.1:5000/users/1/',
+#                           json={})
 
-# response = requests.delete('http://127.0.0.1:5000/users/2/')
+# response = requests.delete('http://127.0.0.1:5000/users/1/')
 
-# response = requests.post('http://127.0.0.1:5000/adv/3/', json={'title': 'MyNew', 'description': 'Some'})
+# response = requests.post('http://127.0.0.1:5000/adv/1/', json={})
 
-# response = requests.get('http://127.0.0.1:5000/adv/2/')
+# response = requests.get('http://127.0.0.1:5000/adv/1/')
 
-# response = requests.patch('http://127.0.0.1:5000/adv/3/', json={'title': 'MyNext', 'description': 'something changes'})
+# response = requests.patch('http://127.0.0.1:5000/adv/1/',
+#                           json={})
 
 # response = requests.delete('http://127.0.0.1:5000/adv/1/')
 
-print(response.status_code)
-print(response.json())
+# print(response.status_code)
+# print(response.json())
